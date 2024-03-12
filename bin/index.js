@@ -1,8 +1,32 @@
 #!/usr/bin/env node
 
-import chalk from "chalk";
+import fs from "fs"; 
+import os from "os";
+import ora from 'ora';
+import path from "path";
+import open from "open";
+import axios from "axios";
 import boxen from "boxen";
+import chalk from "chalk";
+import inquirer from "inquirer";
+import cliSpinners from 'cli-spinners';
 
+// Create a prompt module for interacting with the user via the command line interface
+const prompt = inquirer.createPromptModule();
+
+// Get the desktop directory path based on the operating system
+const desktopDir = path.join(os.homedir(), 'Desktop');
+
+// Replace this URL with your Google Drive shareable link
+const googleDriveUrl = "https://drive.google.com/uc?id=1TEapFw5YptU36UMnHLfHAxXO1ls3Zp-e";
+
+// Create a loader to indicate that the resume is being downloaded
+const loader = ora({
+    text: ' Downloading resume',
+    spinner: cliSpinners.aesthetic,
+})
+
+// Configuration options for the boxen module to customize the appearance of the box
 const options = {
     width: 64,
     padding: 1,
@@ -12,6 +36,74 @@ const options = {
     titleAlignment: "center",
 };
 
+// Define an array of questions for user interaction, including options for various actions
+const questions = [
+    {
+        type: "list",
+        name: "action",
+        message: "What you want to do?",
+        choices: [
+            {
+                name: `Send me an ${chalk.green.bold("email")}?`,
+                value: () => {
+                    setTimeout(() => {
+                        open("mailto:sharmapriyanka84510@gmail.com");
+                    }, 2000); 
+                    console.log(`\n${chalk.green.bold("Done")}, your email client should ${chalk.yellow.bold("open soon")}. \nI'll keep an eye out for your message! ${chalk.bold("👀")}\n`);
+                }
+            },
+            {
+                name: `Download my ${chalk.magentaBright.bold("Resume")}?`,
+                    value: () => {
+                        loader.start();
+                        axios({
+                            method: 'get',
+                            url: googleDriveUrl,
+                            responseType: 'stream'
+                        })
+                        .then(function (response) {
+                            const writer = fs.createWriteStream(path.join(desktopDir, 'lassiecoder-resume.pdf'));
+                        
+                            response.data.pipe(writer);
+
+                            writer.on('finish', () => {
+                                console.log('\nResume downloaded successfully to desktop 📂 ✅\n');
+                                loader.stop();
+                                setTimeout(() => {
+                                    open(path.join(desktopDir, 'lassiecoder-resume.pdf'));
+                                }, 2000); 
+                            });
+                            writer.on('error', (err) => {
+                                console.error('\nError downloading resume:', err);
+                                loader.stop();
+                            });
+                        })
+                        .catch(function (error) {
+                            console.error('\nError downloading resume:', error);
+                            loader.stop();
+                        });
+                    }
+            },
+            {
+                name: `Schedule a ${chalk.redBright.bold("Meeting")}?`,
+                value: () => {
+                    setTimeout(() => {
+                    open('https://calendly.com/lassiecoder/30min')
+                    }, 2000);
+                    console.log(chalk.hex("#4CAF50")(`\nI'm available on ${chalk.yellow("Fridays from 6:00 PM to 6:15 PM")} for a connection. When scheduling a meeting, please include the ${chalk.yellow("subject")} of our discussion. \nLooking forward to meeting you at the scheduled time! 🗓️\n \n`));
+                }
+            },
+            {
+                name: "Just quit!",
+                value: () => {
+                    console.log(chalk.hex("#FF5733")("\nThanks for stopping by. \nIf you ever decide to return, feel free to reach out. \nHave a great day! 🎉\n"));
+                }
+            }
+        ]
+    }
+];
+
+// Define color-coded labels and their corresponding descriptions for various tech platforms
 const data = {
     // LABELS
     labelWork: chalk.bgHex("#008080").black.bold("Work      "),
@@ -33,6 +125,7 @@ const data = {
     intro: chalk.white.bold("I am Priyanka Sharma, a Software Developer known by the handle ") + chalk.hex("#7B68EE")("lassiecoder") + chalk.white.bold(" across various tech platforms. My expertise lies in developing both mobile and web solutions."),
 };
 
+// Concatenate data strings to display in the console output
 const newline = "\n";
 const working = `${data.work}`;
 const introduction = `${data.intro}`;
@@ -43,10 +136,10 @@ const insta = `${data.labelInstagram}  ${data.instagram}`;
 const twitter = `${data.labelTwitter}  ${data.twitter}`;
 const linkedin = `${data.labelLinkedIn}  ${data.linkedin}`;
 
-
+// Concatenating introduction, tech platform links, and online portfolio link
 const output =
     introduction + newline + newline +
-    working + newline + newline +
+    // working + newline + newline +
     devto + newline +
     github + newline +
     twitter + newline +
@@ -54,4 +147,7 @@ const output =
     insta + newline +
     linkedin;
 
+// Display the formatted output in a box and prompt the user with the defined questions then execute the action based on the user's choice
 console.log(chalk.white(boxen(output, options)));
+
+prompt(questions).then(answer => answer.action());
