@@ -8,17 +8,17 @@ import open from "open";
 import axios from "axios";
 import boxen from "boxen";
 import chalk from "chalk";
+import dotenv from 'dotenv';
 import inquirer from "inquirer";
 import cliSpinners from 'cli-spinners';
+
+dotenv.config();
 
 // Create a prompt module for interacting with the user via the command line interface
 const prompt = inquirer.createPromptModule();
 
 // Get the desktop directory path based on the operating system
 const desktopDir = path.join(os.homedir(), 'Desktop');
-
-// Replace this URL with your Google Drive shareable link
-const googleDriveUrl = "https://drive.google.com/uc?id=1TEapFw5YptU36UMnHLfHAxXO1ls3Zp-e";
 
 // Create a loader to indicate that the resume is being downloaded
 const loader = ora({
@@ -47,7 +47,7 @@ const questions = [
                 name: `Send me an ${chalk.green.bold("email")}?`,
                 value: () => {
                     setTimeout(() => {
-                        open("mailto:sharmapriyanka84510@gmail.com");
+                        open(process.env.MAIL_TO);
                     }, 2000); 
                     console.log(`\n${chalk.green.bold("Done")}, your email client should ${chalk.yellow.bold("open soon")}. \nI'll keep an eye out for your message! ${chalk.bold("👀")}\n`);
                 }
@@ -58,7 +58,7 @@ const questions = [
                         loader.start();
                         axios({
                             method: 'get',
-                            url: googleDriveUrl,
+                            url: process.env.GOOGLE_DRIVE_URL,
                             responseType: 'stream'
                         })
                         .then(function (response) {
@@ -88,7 +88,7 @@ const questions = [
                 name: `Schedule a ${chalk.redBright.bold("Meeting")}?`,
                 value: () => {
                     setTimeout(() => {
-                    open('https://calendly.com/lassiecoder/30min')
+                    open(process.env.CALENDLY)
                     }, 2000);
                     console.log(chalk.hex("#4CAF50")(`\nI'm available on ${chalk.yellow("Fridays from 6:00 PM to 6:15 PM")} for a connection. When scheduling a meeting, please include the ${chalk.yellow("subject")} of our discussion. \nLooking forward to meeting you at the scheduled time! 🗓️\n \n`));
                 }
