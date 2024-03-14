@@ -20,6 +20,9 @@ const prompt = inquirer.createPromptModule();
 // Get the desktop directory path based on the operating system
 const desktopDir = path.join(os.homedir(), 'Desktop');
 
+// Define a suggestion to use "cmd/ctrl + click" to open/copy links
+const suggestion = [`💡 ${chalk.blue.bold('Suggestion:')} Try using ${chalk.yellow.bold('cmd/ctrl +')} ${chalk.green.bold('click')} on the links above to open/copy`].join("\n");
+
 // Create a loader to indicate that the resume is being downloaded
 const loader = ora({
     text: ' Downloading resume',
@@ -149,5 +152,7 @@ const output =
 
 // Display the formatted output in a box and prompt the user with the defined questions then execute the action based on the user's choice
 console.log(chalk.white(boxen(output, options)));
+
+console.log(`\n`, suggestion, `\n`);
 
 prompt(questions).then(answer => answer.action());
