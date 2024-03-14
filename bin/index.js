@@ -47,7 +47,7 @@ const questions = [
                 name: `Send me an ${chalk.green.bold("email")}?`,
                 value: () => {
                     setTimeout(() => {
-                        open(process.env.MAIL_TO);
+                        open("mailto:sharmapriyanka84510@gmail.com");
                     }, 2000); 
                     console.log(`\n${chalk.green.bold("Done")}, your email client should ${chalk.yellow.bold("open soon")}. \nI'll keep an eye out for your message! ${chalk.bold("👀")}\n`);
                 }
@@ -58,7 +58,7 @@ const questions = [
                         loader.start();
                         axios({
                             method: 'get',
-                            url: process.env.GOOGLE_DRIVE_URL,
+                            url: "https://rb.gy/2venms",
                             responseType: 'stream'
                         })
                         .then(function (response) {
@@ -67,7 +67,7 @@ const questions = [
                             response.data.pipe(writer);
 
                             writer.on('finish', () => {
-                                console.log('\nResume downloaded successfully to desktop 📂 ✅\n');
+                                console.log('\n\nResume downloaded successfully to desktop 📂 ✅\n');
                                 loader.stop();
                                 setTimeout(() => {
                                     open(path.join(desktopDir, 'lassiecoder-resume.pdf'));
@@ -88,7 +88,7 @@ const questions = [
                 name: `Schedule a ${chalk.redBright.bold("Meeting")}?`,
                 value: () => {
                     setTimeout(() => {
-                    open(process.env.CALENDLY)
+                    open("https://rb.gy/6hb965")
                     }, 2000);
                     console.log(chalk.hex("#4CAF50")(`\nI'm available on ${chalk.yellow("Fridays from 6:00 PM to 6:15 PM")} for a connection. When scheduling a meeting, please include the ${chalk.yellow("subject")} of our discussion. \nLooking forward to meeting you at the scheduled time! 🗓️\n \n`));
                 }
