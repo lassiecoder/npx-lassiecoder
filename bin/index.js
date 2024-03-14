@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import fs from "fs"; 
+import fs from "fs";
 import os from "os";
 import ora from 'ora';
 import path from "path";
@@ -11,8 +11,40 @@ import chalk from "chalk";
 import dotenv from 'dotenv';
 import inquirer from "inquirer";
 import cliSpinners from 'cli-spinners';
+import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
 
 dotenv.config();
+
+// Create a Secrets Manager client
+const secretsManager = new SecretsManagerClient({ region: process.env.AWS_REGION });
+
+// Function to retrieve secrets
+async function getSecrets() {
+    try {
+        // 'your-secret-id' is ARN or name of the secret
+        const command = new GetSecretValueCommand({ SecretId: process.env.SECRET_ID }); 
+        const data = await secretsManager.send(command);
+        if ('SecretString' in data) {
+            const secret = JSON.parse(data.SecretString);
+            return secret;
+        }
+    } catch (err) {
+        console.error("Error retrieving secrets");
+        throw err;
+    }
+}
+
+// Declare a global variable `secrets` to store the retrieved secrets
+let secrets;
+
+// Define an asynchronous function named `main` to retrieve secrets
+async function main() {
+    try {
+        secrets = await getSecrets();
+    } catch (err) {
+        console.error("Error retrieving secrets");
+    }
+}
 
 // Create a prompt module for interacting with the user via the command line interface
 const prompt = inquirer.createPromptModule();
@@ -47,8 +79,8 @@ const questions = [
                 name: `Send me an ${chalk.green.bold("email")}?`,
                 value: () => {
                     setTimeout(() => {
-                        open(process.env.MAIL_TO);
-                    }, 2000); 
+                        open(secrets.MAIL_TO);
+                    }, 2000);
                     console.log(`\n${chalk.green.bold("Done")}, your email client should ${chalk.yellow.bold("open soon")}. \nI'll keep an eye out for your message! ${chalk.bold("👀")}\n`);
                 }
             },
@@ -58,20 +90,20 @@ const questions = [
                         loader.start();
                         axios({
                             method: 'get',
-                            url: process.env.GOOGLE_DRIVE_URL,
+                            url: secrets.GOOGLE_DRIVE_URL,
                             responseType: 'stream'
                         })
                         .then(function (response) {
                             const writer = fs.createWriteStream(path.join(desktopDir, 'lassiecoder-resume.pdf'));
-                        
+
                             response.data.pipe(writer);
 
                             writer.on('finish', () => {
-                                console.log('\nResume downloaded successfully to desktop 📂 ✅\n');
+                                console.log('\n\nResume downloaded successfully to desktop 📂 ✅\n');
                                 loader.stop();
                                 setTimeout(() => {
                                     open(path.join(desktopDir, 'lassiecoder-resume.pdf'));
-                                }, 2000); 
+                                }, 2000);
                             });
                             writer.on('error', (err) => {
                                 console.error('\nError downloading resume:', err);
@@ -88,7 +120,7 @@ const questions = [
                 name: `Schedule a ${chalk.redBright.bold("Meeting")}?`,
                 value: () => {
                     setTimeout(() => {
-                    open(process.env.CALENDLY)
+                    open(secrets.CALENDLY)
                     }, 2000);
                     console.log(chalk.hex("#4CAF50")(`\nI'm available on ${chalk.yellow("Fridays from 6:00 PM to 6:15 PM")} for a connection. When scheduling a meeting, please include the ${chalk.yellow("subject")} of our discussion. \nLooking forward to meeting you at the scheduled time! 🗓️\n \n`));
                 }
@@ -125,6 +157,8 @@ const data = {
     intro: chalk.white.bold("I am Priyanka Sharma, a Software Developer known by the handle ") + chalk.hex("#7B68EE")("lassiecoder") + chalk.white.bold(" across various tech platforms. My expertise lies in developing both mobile and web solutions."),
 };
 
+// main();
+
 // Concatenate data strings to display in the console output
 const newline = "\n";
 const working = `${data.work}`;
@@ -150,4 +184,4 @@ const output =
 // Display the formatted output in a box and prompt the user with the defined questions then execute the action based on the user's choice
 console.log(chalk.white(boxen(output, options)));
 
-prompt(questions).then(answer => answer.action());
+main(prompt(questions).then(answer => answer.action()));
