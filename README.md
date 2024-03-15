@@ -2,8 +2,7 @@
 
 ## Preview
 
-![npx-lassiecoder](https://github.com/lassiecoder/npx-lassiecoder/assets/17312616/14239c1b-0380-46b5-b4f5-e6ca406b981e)
-
+![npxlassiecoder](https://github.com/lassiecoder/npx-lassiecoder/assets/17312616/fb0fd710-69ef-46ef-9f73-54ee4149c86f)
 
 ## Create your personalized NPX introduction card
 
